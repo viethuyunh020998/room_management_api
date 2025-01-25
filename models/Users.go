@@ -7,7 +7,7 @@ import (
 
 // User model
 type User struct {
-	ID          uint      `gorm:"primary_key"`
+	ID          uint      `gorm:"primary_key;autoIncrement"`
 	Username    string    `gorm:"size:255;unique"`
 	Password    string    `gorm:"size:255"` // Mã hóa mật khẩu trước khi lưu
 	Email       string    `gorm:"size:255;unique"`

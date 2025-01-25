@@ -2,13 +2,17 @@ package main
 
 import (
 	"log"
-	"github.com/gin-gonic/gin"
-	"room-management/config"  // Import cấu hình DB
-	"room-management/dao"
-	"room-management/services"
+	"room-management/config" // Import cấu hình DB
 	"room-management/controller"
+	"room-management/dao"
 	"room-management/middlewares"
-	"room-management/models"  // Import models để chạy AutoMigrate
+	"room-management/models" // Import models để chạy AutoMigrate
+	"room-management/services"
+
+	"github.com/gin-contrib/cors" // Import thư viện CORS
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	// "golang.org/x/crypto/bcrypt"
 )
 
 func main() {
@@ -40,17 +44,31 @@ func main() {
 	// Khởi tạo router
 	router := gin.Default()
 
+	// Cấu hình CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},                   // Cho phép frontend từ localhost:3000
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},            // Các phương thức HTTP được phép
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"}, // Các headers được phép
+		AllowCredentials: true,                                                // Cho phép gửi cookie
+	}))
+
 	// Các route không cần middleware
 	router.POST("/add-role", roleController.AddRole)
 	router.POST("/add-user", userController.AddUser)
+	router.POST("/login", userController.Login)
 
 	// Route cần xác thực
 	protected := router.Group("/protected")
-	protected.Use(middlewares.AuthMiddleware())  // Sử dụng middleware xác thực
+	protected.Use(middlewares.AuthMiddleware()) // Sử dụng middleware xác thực
 	{
-		protected.POST("/add-room", roomController.AddRoom)  // API cần xác thực
+		protected.POST("/add-room", roomController.AddRoom) // API cần xác thực
+	}
+	// Load variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
 	}
 
 	// Chạy ứng dụng
 	router.Run(":8080")
+
 }

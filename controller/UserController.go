@@ -1,10 +1,13 @@
 package controller
 
 import (
+	"log"
 	"net/http"
+	"os"
 	"room-management/models"
 	"room-management/services"
-
+	"time"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,27 +32,69 @@ func (controller *UserController) AddUser(c *gin.Context) {
 }
 
 // Login xử lý yêu cầu đăng nhập
+// Login xử lý yêu cầu đăng nhập
 func (controller *UserController) Login(c *gin.Context) {
 	var loginData struct {
-		Username string `json:"username"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
+	// Bind dữ liệu JSON từ request vào loginData
 	if err := c.ShouldBindJSON(&loginData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	// Kiểm tra đăng nhập
-	isValid, err := controller.UserService.CheckLogin(loginData.Username, loginData.Password)
+	// Log thông tin email và mật khẩu sau khi bind dữ liệu
+	log.Println("Login attempt: ", loginData.Email)
+	log.Println("Password entered: ", loginData.Password)
+
+	// Kiểm tra thông tin đăng nhập
+	user, err := controller.UserService.CheckLogin(loginData.Email, loginData.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error during login"})
 		return
 	}
 
-	if isValid {
-		c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	if user != nil {
+		// Nếu đăng nhập thành công, tạoi JWT token
+		token, err := generateJWT(user.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating JWT"})
+			return
+		}
+
+		// Trả về thông tin người dùng và JWT token
+		c.JSON(http.StatusOK, gin.H{
+			"message":  "Login successful",
+			"token":    token,
+			"user":     user,
+		})
 	} else {
+		// Nếu thông tin đăng nhập không hợp lệ
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 	}
+}
+
+
+
+// generateJWT tạo một JWT token cho người dùng
+func generateJWT(userID uint) (string, error) {
+	// Tạo một JWT token với payload là userID
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 72).Unix(), // Token hết hạn sau 72 giờ
+	}
+
+	// Tạo JWT token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Ký token với secret key (bảo mật)
+	secretKey := os.Getenv("JWT_SECRET_KEY") // Đảm bảo rằng bạn đã cấu hình secret key trong môi trường
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
