@@ -129,3 +129,18 @@ func (controller *UserController) EditUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User Update successfully"})
 }
+
+
+// func (controller *UserController) forgotpassword(c *gin.Context) {
+// 	var user models.User
+// 	if err := c.ShouldBindJSON(&user); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+// 		return
+// 	}
+
+// 	if err := controller.UserService.UpdateUser(&user); err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add room"})
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, gin.H{"message": "User Update successfully"})
+// }
