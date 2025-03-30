@@ -20,8 +20,8 @@ type User struct {
 	LastName     string `gorm:"size:20"`
 	Age          int    `gorm:"index"`
 	IsVerified   bool
-	Address      string `gorm:"size:255"`
-	Birthday     time.Time
+	Address      string    `gorm:"size:255"`
+	Birthday     time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 	Status       string    `gorm:"size:50"`
 	CreatedDate  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 	ModifiedDate time.Time `gorm:"default:CURRENT_TIMESTAMP"`
