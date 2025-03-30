@@ -11,11 +11,15 @@ import (
 
 	"github.com/gin-contrib/cors" // Import thư viện CORS
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 	// "golang.org/x/crypto/bcrypt"
 )
 
 func main() {
+	// if err := godotenv.Load(); err != nil {
+	// 	log.Println("⚠️ Không tìm thấy file .env, dùng giá trị mặc định nếu có.")
+	// }
+
 	// Kết nối đến cơ sở dữ liệu
 	config.ConnectDB()
 	defer config.DB.Close()
@@ -64,9 +68,9 @@ func main() {
 		protected.POST("/add-room", roomController.AddRoom) // API cần xác thực
 	}
 	// Load variables from .env file
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	// Chạy ứng dụng
 	router.Run(":8080")

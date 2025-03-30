@@ -6,15 +6,25 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-// DB lưu trữ kết nối cơ sở dữ liệu
 var DB *gorm.DB
 var err error
 
-// ConnectDB thiết lập kết nối đến cơ sở dữ liệu
 func ConnectDB() {
-	DB, err = gorm.Open("mysql", "root:viet123@/room_management?charset=utf8&parseTime=True&loc=Local")
+	// B1: Kết nối MySQL không chọn database trước
+	tempDB, err := gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
-		log.Fatal("Connection failed: ", err)
+		log.Fatal("Initial connection failed: ", err)
 	}
-	log.Println("Connected to the database")
+	defer tempDB.Close()
+
+	// B2: Tạo database nếu chưa có
+	tempDB.Exec("CREATE DATABASE IF NOT EXISTS room_management")
+
+	// B3: Kết nối lại với DB chính
+	DB, err = gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/room_management?charset=utf8&parseTime=True&loc=Local")
+	if err != nil {
+		log.Fatal("Connection to room_management failed: ", err)
+	}
+
+	log.Println("✅ Connected to the database")
 }
