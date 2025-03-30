@@ -56,12 +56,14 @@ func main() {
 	router.POST("/add-role", roleController.AddRole)
 	router.POST("/add-user", userController.AddUser)
 	router.POST("/login", userController.Login)
-
+	router.GET("/check-email", userController.CheckEmail)
 	// Route cần xác thực
 	protected := router.Group("/protected")
 	protected.Use(middlewares.AuthMiddleware()) // Sử dụng middleware xác thực
 	{
-		protected.POST("/add-room", roomController.AddRoom) // API cần xác thực
+		// API need Authenticate
+		protected.POST("/add-room", roomController.AddRoom)
+		protected.POST("/update-user", userController.EditUser)
 	}
 	// Load variables from .env file
 	if err := godotenv.Load(); err != nil {
