@@ -7,6 +7,7 @@ import (
 	"room-management/models"
 	"room-management/services"
 	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -66,17 +67,15 @@ func (controller *UserController) Login(c *gin.Context) {
 
 		// Trả về thông tin người dùng và JWT token
 		c.JSON(http.StatusOK, gin.H{
-			"message":  "Login successful",
-			"token":    token,
-			"user":     user,
+			"message": "Login successful",
+			"token":   token,
+			"user":    user,
 		})
 	} else {
 		// Nếu thông tin đăng nhập không hợp lệ
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 	}
 }
-
-
 
 // generateJWT tạo một JWT token cho người dùng
 func generateJWT(userID uint) (string, error) {
@@ -97,4 +96,36 @@ func generateJWT(userID uint) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+// CheckEmail xử lý yêu cầu kiểm tra email
+func (controller *UserController) CheckEmail(c *gin.Context) {
+	email := c.DefaultQuery("email", "")
+
+	if email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
+		return
+	}
+
+	exists, err := controller.UserService.CheckEmailExist(email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking email"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"exists": exists})
+}
+
+func (controller *UserController) EditUser(c *gin.Context) {
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	if err := controller.UserService.UpdateUser(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add room"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User Update successfully"})
 }

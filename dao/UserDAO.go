@@ -25,3 +25,13 @@ func (dao *UserDAO) GetUserByUsername(user *models.User, username string) error 
 	}
 	return nil
 }
+
+// lấy tổng số người dùng
+func(dao *UserDAO) getAllNormalUser(user []models.User)error{
+
+	if err := dao.DB.Where("roleid = ?", 2).Find(&user).Error; err != nil {
+		return err
+	}
+	return nil
+
+}
